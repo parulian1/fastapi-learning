@@ -1,4 +1,4 @@
-from app.routers import items, database
+from app.routers import items, database, ai
 from fastapi import FastAPI
 from app.database_setup import create_db_and_tables
 
@@ -44,3 +44,4 @@ def on_startup():
 
 app.include_router(items.router)
 app.include_router(database.router)
+app.include_router(ai.router)
