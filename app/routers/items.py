@@ -1,9 +1,9 @@
 from enum import Enum
 import random
 from typing import Annotated
-from pydantic import AfterValidator, BaseModel
+from pydantic import AfterValidator, BaseModel, Field
 import uvicorn
-from fastapi import APIRouter, FastAPI, Path, Query
+from fastapi import APIRouter, Body, FastAPI, Path, Query
 
 
 router = APIRouter(tags=["items"], prefix="/items")
@@ -54,9 +54,16 @@ async def read_user_item(item_id: str, needy: str, skip: int = 0, limit: int | N
 
 class Item(BaseModel):
     name: str
-    description: str | None = None
-    price: float
+    description: str | None = Field(
+        default=None, title="The description of the item", max_length=300
+    )
+    price: float = Field(gt=0, description="The price must be greater than zero")
     tax: float | None = None
+
+
+class User(BaseModel):
+    username: str
+    full_name: str | None = None
 
 
 @router.post("/items/")
@@ -69,8 +76,11 @@ async def create_item(item: Item):
 
 
 @router.put("/items/{item_id}")
-async def update_item(item_id: int, item: Item):
-    return {"item_id": item_id, **item.model_dump()}
+async def update_item(
+    item_id: int, item: Item, user: User, importance: Annotated[int, Body()]
+):
+    results = {"item_id": item_id, "item": item, "user": user, "importance": importance}
+    return results
 
 
 @router.get("/items123/")
